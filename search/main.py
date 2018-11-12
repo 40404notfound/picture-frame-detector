@@ -14,7 +14,7 @@ with open('9223372032559808999.jpg', "rb") as imageFile:
     f = imageFile.read()
     print(f)
 es = Elasticsearch(['https://search-auramaze-test-lvic4eihmds7zwtnqganecktha.us-east-2.es.amazonaws.com'])
-ses = AuraMazeSignatureES(es)
+ses = AuraMazeSignatureES(es, distance_cutoff=1.0)
 
 print(ses.search_image(f, bytestream=True))
 print(ses.search_image('https://www.vangoghmuseum.nl/download/61fbedad-1d68-4b96-8f08-2c6ec01eb911.jpg?size=s'))
