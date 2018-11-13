@@ -111,3 +111,4 @@ if __name__ == '__main__':
     print(search_image(ses, raw))
     end = time.time()
     print(end - start)
+    sys.stdout.flush()
