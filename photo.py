@@ -68,12 +68,10 @@ class Photo:
 
     def generate_paintings(self):
         for box in self.boxes:
-            print(box)
-
             width = max(coord[0] for coord in box) - min(coord[0] for coord in box)
             height = max(coord[1] for coord in box) - min(coord[1] for coord in box)
 
-            min_sum_index, min_sum = min(enumerate(box), key=lambda item: sum(item[1]))
+            min_sum_index, min_sum_item = min(enumerate(box), key=lambda item: sum(item[1]))
             max_sum_index = (min_sum_index + 2) % 4
             target = [()] * 4
             target[min_sum_index] = (0, 0)

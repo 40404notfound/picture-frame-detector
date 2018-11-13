@@ -163,7 +163,7 @@ class AuraMazeSignatureES(SignatureDatabaseBase):
 
         dists = normalized_distance(sigs, np.array(signature))
 
-        formatted_res = [{'id': x['_id'],
+        formatted_res = [{'id': x['_source']['id'],
                           'score': x['_score'],
                           'metadata': x['_source']['image']['default'].get('metadata'),
                           'path': x['_source']['image']['default'].get('url', x['_source'].get('path'))}
