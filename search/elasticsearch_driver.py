@@ -4,7 +4,9 @@ from image_match.signature_database_base import make_record
 from datetime import datetime
 import numpy as np
 from collections import deque
+from itertools import product
 from operator import itemgetter
+from PIL import Image
 
 
 class AuraMazeSignatureES(SignatureDatabaseBase):
@@ -80,12 +82,25 @@ class AuraMazeSignatureES(SignatureDatabaseBase):
         """
         img = self.gis.preprocess_image(path, bytestream)
 
+        def crop_by_scale(img, k):
+            y, x = img.shape
+            return img[int(round((y * (1 - k) / 2))):int(round((y * (1 + k) // 2))),
+                   int(round((x * (1 - k) // 2))):int(round((x * (1 + k) // 2)))]
+
         if all_orientations:
             # use four rotations
-            orientations = [lambda x: x,
+            rotations = [lambda x: x,
                          np.rot90,
                          lambda x: np.rot90(x, 2),
                          lambda x: np.rot90(x, 3)]
+
+            # crop image
+            crops = [lambda x: x,
+                     lambda x: crop_by_scale(x, 0.9),
+                     lambda x: crop_by_scale(x, 0.8),
+                     lambda x: crop_by_scale(x, 0.7)]
+
+            orientations = product(rotations, crops)
 
         else:
             # otherwise just use the identity transformation
@@ -95,10 +110,12 @@ class AuraMazeSignatureES(SignatureDatabaseBase):
         # this will only take one iteration
         result = []
 
-        orientations = set(np.ravel(list(orientations)))
         for transform in orientations:
             # compose all functions and apply on signature
-            transformed_img = transform(img)
+            transformed_img = transform[0](transform[1](img))
+            # print(transformed_img.shape)
+            # im = Image.fromarray(np.stack((np.multiply(transformed_img, 255),) * 3, axis=-1).astype('uint8'))
+            # im.show()
 
             # generate the signature
             transformed_record = make_record(transformed_img, self.gis, self.k, self.N)
