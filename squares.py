@@ -60,8 +60,16 @@ def angle(pt1,pt2,pt0):
 
     return(dx1*dx2 + dy1*dy2)/np.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2)+1e-10)
 
-def raw_to_array(image):
-    return np.asanyarray(Image.open(io.BytesIO(image)))
+def raw_to_array(raw_image):
+    return np.asanyarray(Image.open(io.BytesIO(raw_image)))
+
+def crop_image(image, box):
+    return image.crop(box)
 
 if __name__=="__main__":
+    raw = open('photos/IMG_6832.JPG','rb').read()
+    image = Image.open(io.BytesIO(raw))
+    image = crop_image(image, (100, 100, 900, 900))
+    image.show()
+    exit(0)
     test()
