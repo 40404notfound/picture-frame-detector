@@ -124,14 +124,14 @@ class AuraMazeSignatureES(SignatureDatabaseBase):
             result.extend(l)
 
         ids = set()
+        result = sorted(result, key=itemgetter('dist'))
         unique = []
         for item in result:
             if item['id'] not in ids:
                 unique.append(item)
                 ids.add(item['id'])
 
-        r = sorted(unique, key=itemgetter('dist'))
-        return r
+        return unique
 
     def search_single_record(self, rec, pre_filter=None):
         path = rec.pop('path')
