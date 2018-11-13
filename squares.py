@@ -11,17 +11,25 @@ appro=0.02
 def test():
     im=cv2.imread("photos/IMG_5978.JPG",1)
     squares=getsquare(im)
+    #print(squares)
+
+    for i in squares:
+        print(i)
     pass
 def getsquare(image):
+    image=cv2.resize(image,(600,800))
     squares=[]
     timg=image.copy()
-    gray0 =timg.copy()
+
+
+    gray0 = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+
 
     timg=cv2.medianBlur(image,9)
 
     for c in range(3):
         ch=[c, 0]
-        cv2.mixChannels(timg,gray0,ch)
+        cv2.mixChannels([timg],[gray0],ch)
 
         for l in range(N):
             if l==0:
@@ -42,8 +50,7 @@ def getsquare(image):
                         cosine=abs(angle(approx[j%4],approx[j-2],approx[j-1]))
                         maxCosine=max(maxCosine,cosine)
                     if maxCosine<0.3:
-                        squares.append(approx)
-    return squares
+                        yield approx
 
 def angle(pt1,pt2,pt0):
     dx1=float(pt1[0][0]-pt0[0][0])
