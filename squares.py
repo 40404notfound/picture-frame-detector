@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from PIL import Image
+import io
 
 N=10
 canny1=5
@@ -26,7 +28,7 @@ def getsquare(image):
                 gray=cv2.Canny(gray0,canny1,canny2,canny3*2+1)
                 gray=cv2.dilate(gray,cv2.getStructuringElement(cv2.MORPH_RECT,(3, 3)))
             else:
-                
+
                 _,gray=cv2.threshold(gray0,(l+1)*255/N,255,cv2.THRESH_BINARY)
                 #gray=cv2.convertScaleAbs(gray)
                 #cv2.Mat()
@@ -50,6 +52,9 @@ def angle(pt1,pt2,pt0):
     dy2=float(pt2[0][1]-pt0[0][1])
 
     return(dx1*dx2 + dy1*dy2)/np.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2)+1e-10)
+
+def raw_to_array(image):
+    return np.asanyarray(Image.open(io.BytesIO(image)))
 
 if __name__=="__main__":
     test()
