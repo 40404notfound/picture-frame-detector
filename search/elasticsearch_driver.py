@@ -4,6 +4,7 @@ from image_match.signature_database_base import make_record
 from datetime import datetime
 import numpy as np
 from collections import deque
+from operator import itemgetter
 
 
 class AuraMazeSignatureES(SignatureDatabaseBase):
@@ -46,6 +47,74 @@ class AuraMazeSignatureES(SignatureDatabaseBase):
         self.size = size
 
         super(AuraMazeSignatureES, self).__init__(*args, **kwargs)
+
+    def search_image(self, path, all_orientations=False, bytestream=False):
+        """Search for matches
+
+        Args:
+            path (string): path or image data. If bytestream=False, then path is assumed to be
+                a URL or filesystem path. Otherwise, it's assumed to be raw image data
+            all_orientations (Optional[boolean]): if True, search for all combinations of mirror
+                images, rotations, and color inversions (default False)
+            bytestream (Optional[boolean]): will the image be passed as raw bytes?
+                That is, is the 'path_or_image' argument an in-memory image?
+                (default False)
+
+        Returns:
+            a formatted list of dicts representing unique matches, sorted by dist
+
+            For example, if three matches are found:
+
+            [
+             {'dist': 0.069116439263706961,
+              'id': u'AVM37oZq0osmmAxpPvx7',
+              'path': u'https://pixabay.com/static/uploads/photo/2012/11/28/08/56/mona-lisa-67506_960_720.jpg'},
+             {'dist': 0.22484320805049718,
+              'id': u'AVM37nMg0osmmAxpPvx6',
+              'path': u'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg/687px-Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg'},
+             {'dist': 0.42529792112113302,
+              'id': u'AVM37p530osmmAxpPvx9',
+              'path': u'https://c2.staticflickr.com/8/7158/6814444991_08d82de57e_z.jpg'}
+            ]
+
+        """
+        img = self.gis.preprocess_image(path, bytestream)
+
+        if all_orientations:
+            # use four rotations
+            orientations = [lambda x: x,
+                         np.rot90,
+                         lambda x: np.rot90(x, 2),
+                         lambda x: np.rot90(x, 3)]
+
+        else:
+            # otherwise just use the identity transformation
+            orientations = [lambda x: x]
+
+        # try for every possible combination of transformations; if all_orientations=False,
+        # this will only take one iteration
+        result = []
+
+        orientations = set(np.ravel(list(orientations)))
+        for transform in orientations:
+            # compose all functions and apply on signature
+            transformed_img = transform(img)
+
+            # generate the signature
+            transformed_record = make_record(transformed_img, self.gis, self.k, self.N)
+
+            l = self.search_single_record(transformed_record)
+            result.extend(l)
+
+        ids = set()
+        unique = []
+        for item in result:
+            if item['id'] not in ids:
+                unique.append(item)
+                ids.add(item['id'])
+
+        r = sorted(unique, key=itemgetter('dist'))
+        return r
 
     def search_single_record(self, rec, pre_filter=None):
         path = rec.pop('path')
@@ -111,19 +180,19 @@ class AuraMazeSignatureES(SignatureDatabaseBase):
         rec['timestamp'] = datetime.now()
         self.es.index(index=self.index, doc_type=self.doc_type, body=rec, refresh=refresh_after)
 
-    def delete_duplicates(self, path):
-        """Delete all but one entries in elasticsearch whose `path` value is equivalent to that of path.
-        Args:
-            path (string): path value to compare to those in the elastic search
-        """
-        matching_paths = [item['_id'] for item in
-                          self.es.search(body={'query':
-                                                   {'match':
-                                                        {'path': path}
-                                                    }
-                                               },
-                                         index=self.index)['hits']['hits']
-                          if item['_source']['path'] == path]
-        if len(matching_paths) > 0:
-            for id_tag in matching_paths[1:]:
-                self.es.delete(index=self.index, doc_type=self.doc_type, id=id_tag)
+    # def delete_duplicates(self, path):
+    #     """Delete all but one entries in elasticsearch whose `path` value is equivalent to that of path.
+    #     Args:
+    #         path (string): path value to compare to those in the elastic search
+    #     """
+    #     matching_paths = [item['_id'] for item in
+    #                       self.es.search(body={'query':
+    #                                                {'match':
+    #                                                     {'path': path}
+    #                                                 }
+    #                                            },
+    #                                      index=self.index)['hits']['hits']
+    #                       if item['_source']['path'] == path]
+    #     if len(matching_paths) > 0:
+    #         for id_tag in matching_paths[1:]:
+    #             self.es.delete(index=self.index, doc_type=self.doc_type, id=id_tag)
