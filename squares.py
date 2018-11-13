@@ -56,9 +56,11 @@ def getsquare(image):
                     if maxCosine < 0.3:
 
                         for it in approx:
-                            it[0][0] *= oldshape[0] / newshape[0]
-                            it[0][1] *= oldshape[1] / newshape[1]
-                        yield approx
+                            it[0][0]*=oldshape[0]/newshape[0]
+                            it[0][1]*=oldshape[1]/newshape[1]
+
+                        
+                        yield [ (it[0][0],it[0][1])  for it  in approx]
 
 
 def angle(pt1, pt2, pt0):
@@ -107,4 +109,3 @@ if __name__ == "__main__":
     image = crop_image(image, (100, 100, 900, 900))
     image.show()
     exit(0)
-    test()
