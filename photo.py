@@ -89,8 +89,8 @@ class Photo:
 
             coeffs = self.find_coeffs(target, box)
 
-            img_transform = photo.get_image().transform((width, height), Image.PERSPECTIVE, coeffs,
-                                                        Image.BICUBIC)
+            img_transform = self.image.transform((width, height), Image.PERSPECTIVE, coeffs,
+                                                 Image.BICUBIC)
 
             output = io.BytesIO()
             img_transform.convert('RGB').save(output, 'JPEG')
