@@ -3,16 +3,15 @@ import numpy as np
 from PIL import Image
 import io
 
-N = 10
-canny1 = 5
-canny2 = 50
-canny3 = 1
-appro = 0.02
-
 
 class Photo:
-    def __init__(self, raw):
+    def __init__(self, raw, N=10, canny1=5, canny2=50, canny3=1, approx=0.02):
         self.raw = raw
+        self.N = N
+        self.canny1 = canny1
+        self.canny2 = canny2
+        self.canny3 = canny3
+        self.approx = approx
         self.image = Image.open(io.BytesIO(raw))
         self.array = np.asanyarray(self.image)
         self.boxes = self.generate_boxes()
@@ -40,18 +39,18 @@ class Photo:
             ch = [c, 0]
             cv2.mixChannels([timg], [gray0], ch)
 
-            for l in range(N):
+            for l in range(self.N):
                 if l == 0:
-                    gray = cv2.Canny(gray0, canny1, canny2, canny3 * 2 + 1)
+                    gray = cv2.Canny(gray0, self.canny1, self.canny2, self.canny3 * 2 + 1)
                     gray = cv2.dilate(gray, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
                 else:
-                    _, gray = cv2.threshold(gray0, (l + 1) * 255 / N, 255, cv2.THRESH_BINARY)
+                    _, gray = cv2.threshold(gray0, (l + 1) * 255 / self.N, 255, cv2.THRESH_BINARY)
                     # gray=cv2.convertScaleAbs(gray)
                     # cv2.Mat()
                 _, contour, _ = cv2.findContours(gray, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
                 for i in range(len(contour)):
-                    approx = cv2.approxPolyDP(contour[i], cv2.arcLength(contour[i], True) * appro, True)
+                    approx = cv2.approxPolyDP(contour[i], cv2.arcLength(contour[i], True) * self.approx, True)
                     if len(approx) == 4 and abs(cv2.contourArea(approx)) > 1000 and cv2.isContourConvex(approx):
                         maxCosine = 0.0
                         for j in range(2, 5):
