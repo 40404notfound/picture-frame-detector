@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-from PIL import Image
-import io
 
 N=10
 canny1=5
@@ -9,7 +7,7 @@ canny2=50
 canny3=1
 appro=0.02
 def test():
-    im=cv2.imread("photos/IMG_5978.JPG",1)
+    im=cv2.imread("photos/IMG_6832.JPG",1)
     squares=getsquare(im)
     #print(squares)
 
@@ -17,7 +15,9 @@ def test():
         print(i)
     pass
 def getsquare(image):
+    oldshape=image.shape
     image=cv2.resize(image,(600,800))
+    newshape=image.shape
     squares=[]
     timg=image.copy()
 
@@ -36,7 +36,7 @@ def getsquare(image):
                 gray=cv2.Canny(gray0,canny1,canny2,canny3*2+1)
                 gray=cv2.dilate(gray,cv2.getStructuringElement(cv2.MORPH_RECT,(3, 3)))
             else:
-
+                
                 _,gray=cv2.threshold(gray0,(l+1)*255/N,255,cv2.THRESH_BINARY)
                 #gray=cv2.convertScaleAbs(gray)
                 #cv2.Mat()
@@ -50,6 +50,10 @@ def getsquare(image):
                         cosine=abs(angle(approx[j%4],approx[j-2],approx[j-1]))
                         maxCosine=max(maxCosine,cosine)
                     if maxCosine<0.3:
+
+                        for it in approx:
+                            it[0][0]*=oldshape[0]/newshape[0]
+                            it[0][1]*=oldshape[1]/newshape[1]
                         yield approx
 
 def angle(pt1,pt2,pt0):
@@ -59,9 +63,6 @@ def angle(pt1,pt2,pt0):
     dy2=float(pt2[0][1]-pt0[0][1])
 
     return(dx1*dx2 + dy1*dy2)/np.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2)+1e-10)
-
-def raw_to_array(image):
-    return np.asanyarray(Image.open(io.BytesIO(image)))
 
 if __name__=="__main__":
     test()
