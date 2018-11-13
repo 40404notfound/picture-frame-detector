@@ -21,8 +21,9 @@ def test():
 
 
 def getsquare(image):
+    record = set()
     oldshape = image.shape
-    # image = cv2.resize(image, (600, 800))
+    image = cv2.resize(image, (600, 800))
     newshape = image.shape
     squares = []
     timg = image.copy()
@@ -54,11 +55,14 @@ def getsquare(image):
                         cosine = abs(angle(approx[j % 4], approx[j - 2], approx[j - 1]))
                         maxCosine = max(maxCosine, cosine)
                     if maxCosine < 0.3:
-                        # for it in approx:
-                        # it[0][0] *= oldshape[0] / newshape[0]
-                        # it[0][1] *= oldshape[1] / newshape[1]
-
-                        yield [(it[0][0], it[0][1]) for it in approx]
+                        for it in approx:
+                            it[0][0] *= oldshape[1] / newshape[1]
+                            it[0][1] *= oldshape[0] / newshape[0]
+                        box = tuple((it[0][0], it[0][1]) for it in approx)
+                        sorted_box = tuple(sorted(box))
+                        if sorted_box not in record:
+                            record.add(sorted_box)
+                            yield box
 
 
 def angle(pt1, pt2, pt0):
@@ -96,12 +100,10 @@ if __name__ == "__main__":
     img = Image.open(io.BytesIO(raw))
     squares = getsquare(raw_to_array(raw))
     width, height = img.size
-
-    for i in range(5):
-        box = next(squares)
-        print(box)
+    for sq, i in zip(squares, range(0, 999999)):
+        print(sq)
         coeffs = find_coeffs(
-            [(0, 0), (width, 0), (width, height), (0, height)], box)
+            [(0, 0), (width, 0), (width, height), (0, height)], sq)
         # [(0, 0), (256, 100), (500, 700), (0, 400)])
 
         img.transform((width, height), Image.PERSPECTIVE, coeffs,
