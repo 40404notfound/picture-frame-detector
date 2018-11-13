@@ -109,6 +109,4 @@ if __name__ == '__main__':
     start = time.time()
     print(search_image(ses, raw))
     end = time.time()
-    print()
     print(end - start)
-    print()
