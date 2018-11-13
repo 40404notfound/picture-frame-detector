@@ -117,20 +117,3 @@ class Photo:
 
         res = np.dot(np.linalg.inv(A.T * A) * A.T, B)
         return np.array(res).reshape(8)
-
-
-if __name__ == "__main__":
-    raw = open("photos/IMG_6832.JPG", 'rb').read()
-    photo = Photo(raw)
-    paintings = photo.generate_paintings()
-
-    i = 0
-    for painting in paintings:
-        i += 1
-        # painting.save('temp-{}.jpg'.format(i))
-        open('temp-{}.jpg'.format(i), 'wb').write(painting)
-
-        if i == 10:
-            break
-
-    exit(0)
