@@ -12,7 +12,7 @@ appro = 0.02
 
 def test():
     im = cv2.imread("photos/IMG_6832.JPG", 1)
-    squares = getsquare(im)
+    squares = get_box(im)
     # print(squares)
 
     for i in squares:
@@ -20,7 +20,7 @@ def test():
     pass
 
 
-def getsquare(image):
+def get_box(image):
     record = set()
     oldshape = image.shape
     image = cv2.resize(image, (600, 800))
@@ -98,21 +98,43 @@ def find_coeffs(pa, pb):
 if __name__ == "__main__":
     raw = open("photos/IMG_6832.JPG", 'rb').read()
     img = Image.open(io.BytesIO(raw))
-    squares = getsquare(raw_to_array(raw))
-    width, height = img.size
-    for sq, i in zip(squares, range(0, 999999)):
-        print(sq)
-        coeffs = find_coeffs(
-            [(0, 0), (width, 0), (width, height), (0, height)], sq)
-        # [(0, 0), (256, 100), (500, 700), (0, 400)])
+    boxes = get_box(raw_to_array(raw))
 
-        img.transform((width, height), Image.PERSPECTIVE, coeffs,
-                      Image.BICUBIC).save('temp-{}.jpg'.format(i))
+    i = 0
+    for box in boxes:
+        i += 1
+        print(box)
 
-    exit(0)
+        width = max(coord[0] for coord in box) - min(coord[0] for coord in box)
+        height = max(coord[1] for coord in box) - min(coord[1] for coord in box)
 
-    raw = open('photos/IMG_6832.JPG', 'rb').read()
-    image = Image.open(io.BytesIO(raw))
-    image = crop_image(image, (100, 100, 900, 900))
-    image.show()
+        min_sum_index, min_sum = min(enumerate(box), key=lambda item: sum(item[1]))
+        max_sum_index = (min_sum_index + 2) % 4
+        target = [()] * 4
+        target[min_sum_index] = (0, 0)
+        target[max_sum_index] = (width, height)
+
+        i1 = (min_sum_index + 1) % 4
+        i2 = (min_sum_index + 3) % 4
+
+        if box[i1][0] - box[i2][0] > box[i1][1] - box[i2][1]:
+            target[i1], target[i2] = (width, 0), (0, height)
+        else:
+            target[i1], target[i2] = (0, height), (width, 0)
+
+        coeffs = find_coeffs(target, box)
+
+        img_transform = img.transform((width, height), Image.PERSPECTIVE, coeffs,
+                                      Image.BICUBIC)
+        img_transform.save('temp-{}.jpg'.format(i))
+
+        for k in range(7, 10):
+            k /= 10
+            width, height = img_transform.size
+            box = (width * (1 - k) / 2, height * (1 - k) / 2, width * (1 + k) / 2, height * (1 + k) / 2)
+            img_transform.crop(box).save('temp-{}-{}.jpg'.format(i, k))
+
+        if i == 10:
+            break
+
     exit(0)
