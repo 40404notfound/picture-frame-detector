@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-from PIL import Image
-import io
 
 N=10
 canny1=5
@@ -56,7 +54,9 @@ def getsquare(image):
                         for it in approx:
                             it[0][0]*=oldshape[0]/newshape[0]
                             it[0][1]*=oldshape[1]/newshape[1]
-                        yield approx
+
+                        
+                        yield [ (it[0][0],it[0][1])  for it  in approx]
 
 def angle(pt1,pt2,pt0):
     dx1=float(pt1[0][0]-pt0[0][0])
@@ -66,16 +66,5 @@ def angle(pt1,pt2,pt0):
 
     return(dx1*dx2 + dy1*dy2)/np.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2)+1e-10)
 
-def raw_to_array(raw_image):
-    return np.asanyarray(Image.open(io.BytesIO(raw_image)))
-
-def crop_image(image, box):
-    return image.crop(box)
-
 if __name__=="__main__":
-    raw = open('photos/IMG_6832.JPG','rb').read()
-    image = Image.open(io.BytesIO(raw))
-    image = crop_image(image, (100, 100, 900, 900))
-    image.show()
-    exit(0)
     test()
