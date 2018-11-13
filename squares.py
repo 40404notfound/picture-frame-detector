@@ -9,7 +9,7 @@ canny2=50
 canny3=1
 appro=0.02
 def test():
-    im=cv2.imread("photos/IMG_5978.JPG",1)
+    im=cv2.imread("photos/IMG_6832.JPG",1)
     squares=getsquare(im)
     #print(squares)
 
@@ -17,7 +17,9 @@ def test():
         print(i)
     pass
 def getsquare(image):
+    oldshape=image.shape
     image=cv2.resize(image,(600,800))
+    newshape=image.shape
     squares=[]
     timg=image.copy()
 
@@ -36,7 +38,7 @@ def getsquare(image):
                 gray=cv2.Canny(gray0,canny1,canny2,canny3*2+1)
                 gray=cv2.dilate(gray,cv2.getStructuringElement(cv2.MORPH_RECT,(3, 3)))
             else:
-
+                
                 _,gray=cv2.threshold(gray0,(l+1)*255/N,255,cv2.THRESH_BINARY)
                 #gray=cv2.convertScaleAbs(gray)
                 #cv2.Mat()
@@ -50,6 +52,10 @@ def getsquare(image):
                         cosine=abs(angle(approx[j%4],approx[j-2],approx[j-1]))
                         maxCosine=max(maxCosine,cosine)
                     if maxCosine<0.3:
+
+                        for it in approx:
+                            it[0][0]*=oldshape[0]/newshape[0]
+                            it[0][1]*=oldshape[1]/newshape[1]
                         yield approx
 
 def angle(pt1,pt2,pt0):
