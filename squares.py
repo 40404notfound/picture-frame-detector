@@ -96,7 +96,7 @@ def find_coeffs(pa, pb):
 
 
 if __name__ == "__main__":
-    raw = open("photos/IMG_6832.JPG", 'rb').read()
+    raw = open("photos/IMG_0325.JPG", 'rb').read()
     img = Image.open(io.BytesIO(raw))
     boxes = get_box(raw_to_array(raw))
 

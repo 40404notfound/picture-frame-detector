@@ -10,7 +10,7 @@ from elasticsearch_driver import AuraMazeSignatureES
 # im = Image.open(BytesIO(base64.b64decode(data)))
 # im.show()
 
-with open('../temp-8-0.8.jpg', "rb") as imageFile:
+with open('../temp-1.jpg', "rb") as imageFile:
     f = imageFile.read()
     print(f)
 es = Elasticsearch(['https://search-auramaze-test-lvic4eihmds7zwtnqganecktha.us-east-2.es.amazonaws.com'])
