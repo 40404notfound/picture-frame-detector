@@ -6,6 +6,7 @@ from queue import Queue
 from threading import Thread
 import hashlib
 import time
+import sys
 
 num_trials = 6
 num_workers = 3
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     es = Elasticsearch(['https://search-auramaze-test-lvic4eihmds7zwtnqganecktha.us-east-2.es.amazonaws.com'])
     ses = AuraMazeSignatureES(es, distance_cutoff=0.5)
 
-    raw = open('photos/IMG_6832.JPG', 'rb').read()
+    raw = open(sys.argv[1], 'rb').read()
 
     start = time.time()
     print(search_image(ses, raw))
