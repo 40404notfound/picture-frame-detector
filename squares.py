@@ -22,7 +22,7 @@ def test():
 
 def getsquare(image):
     oldshape = image.shape
-    image = cv2.resize(image, (600, 800))
+    # image = cv2.resize(image, (600, 800))
     newshape = image.shape
     squares = []
     timg = image.copy()
@@ -54,13 +54,11 @@ def getsquare(image):
                         cosine = abs(angle(approx[j % 4], approx[j - 2], approx[j - 1]))
                         maxCosine = max(maxCosine, cosine)
                     if maxCosine < 0.3:
+                        # for it in approx:
+                        # it[0][0] *= oldshape[0] / newshape[0]
+                        # it[0][1] *= oldshape[1] / newshape[1]
 
-                        for it in approx:
-                            it[0][0]*=oldshape[0]/newshape[0]
-                            it[0][1]*=oldshape[1]/newshape[1]
-
-                        
-                        yield [ (it[0][0],it[0][1])  for it  in approx]
+                        yield [(it[0][0], it[0][1]) for it in approx]
 
 
 def angle(pt1, pt2, pt0):
@@ -94,13 +92,20 @@ def find_coeffs(pa, pb):
 
 
 if __name__ == "__main__":
-    img = Image.open("photos/IMG_6832.JPG")
+    raw = open("photos/IMG_6832.JPG", 'rb').read()
+    img = Image.open(io.BytesIO(raw))
+    squares = getsquare(raw_to_array(raw))
     width, height = img.size
-    coeffs = find_coeffs(
-        [(0, 0), (width, 0), (width, height), (0, height)], [(0, 0), (256, 100), (500, 700), (0, 400)])
 
-    img.transform((width, height), Image.PERSPECTIVE, coeffs,
-                  Image.BICUBIC).save('temp.jpg')
+    for i in range(5):
+        box = next(squares)
+        print(box)
+        coeffs = find_coeffs(
+            [(0, 0), (width, 0), (width, height), (0, height)], box)
+        # [(0, 0), (256, 100), (500, 700), (0, 400)])
+
+        img.transform((width, height), Image.PERSPECTIVE, coeffs,
+                      Image.BICUBIC).save('temp-{}.jpg'.format(i))
 
     exit(0)
 
