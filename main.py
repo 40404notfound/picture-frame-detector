@@ -21,7 +21,7 @@ def search_image_sync(ses, raw):
         if len(l):
             min_dist_index, min_dist_item = min(enumerate(l), key=lambda item: item[1]['dist'])
             if min_dist_item['dist'] < 0.3:
-                return min_dist_item
+                return [min_dist_item]
             results.extend(l)
 
     results = sorted(results, key=itemgetter('dist'))
@@ -88,7 +88,7 @@ def search_image(ses, raw):
     #     t.join()
 
     if results['best']:
-        return results['best']
+        return [results['best']]
 
     results['list'] = sorted(results['list'], key=itemgetter('dist'))
     ids = set()
